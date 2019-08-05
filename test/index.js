@@ -1,5 +1,6 @@
 import fontkit from '../src';
 import assert from 'assert';
+const fs = require('fs');
 
 describe('fontkit', function() {
   it('should open a font asynchronously', () =>
@@ -76,5 +77,23 @@ describe('fontkit', function() {
 
     let font = collection.getFont('NotoSans-Italic');
     return assert.equal(font.postscriptName, 'NotoSans-Italic');
+  });
+});
+
+describe("load", () => {
+  it('should load font from web server', () => {
+    global.fetch = () => new Promise(resolve => {
+      resolve({
+        ok: true,
+        arrayBuffer: () => fs.readFileSync(__dirname + '/data/SourceSansPro/SourceSansPro-Regular.woff2'),
+      })
+    });
+    let font = fontkit.load('http://fake.fake/', (err, font) => {
+      assert.equal(err, null);
+      return assert.equal(font.constructor.name, 'WOFF2Font');
+    });
+
+
+
   });
 });

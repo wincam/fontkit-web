@@ -37,6 +37,28 @@ fontkit.open = function(filename, postscriptName, callback) {
   return;
 };
 
+function checkStatus(response) {
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+  }
+  return response;
+}
+
+fontkit.load = function(url, postscriptName, callback) {
+  if (typeof postscriptName === 'function') {
+    callback = postscriptName;
+    postscriptName = null;
+  }
+
+  fetch(url)
+  .then(response => checkStatus(response) && response.arrayBuffer())
+  .then(buffer => {
+    var font = fontkit.create(buffer, postscriptName);
+    return callback(null, font);
+  })
+  .catch(e => callback(e));
+};
+
 fontkit.create = function(buffer, postscriptName) {
   for (let i = 0; i < formats.length; i++) {
     let format = formats[i];
